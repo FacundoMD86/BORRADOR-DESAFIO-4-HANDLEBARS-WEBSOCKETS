@@ -5,15 +5,22 @@ import uploader from "../services/uploader.js";
 const ProductRouter = Router();
 
 const productManager = new ProductManager("./src/files/Productos.json");
-const readProducts = productManager.readProduct();
+const readProducts = await productManager.getProduct();
 
 
 ProductRouter.get("/", async (req, res) => {
     let limit = parseInt(req.query.limit);
-    if (!limit) return res.send(await readProducts);
-    let allProducts = await readProducts;
-    let productLimit = allProducts.slice(limit);
-    res.send(productLimit);
+    if (!limit) {
+        let allProducts = await productManager.getProduct();
+        res.render("home", {
+            title: "Express avanzado | handlebars ",
+            products: allProducts
+        });
+    } else {
+        let allProducts = await productManager.getProduct();
+        let productLimit = allProducts.slice(limit);
+        res.send(productLimit);
+    }
 });
 
 ProductRouter.get("/:id", async (req, res) => {
@@ -26,7 +33,7 @@ ProductRouter.get("/:id", async (req, res) => {
 
 ProductRouter.post("/", uploader.single("image"), async (req, res) => {
     let newProduct = req.body;
-    res.send(await productManager.addProduct(newProduct));
+    res.send(await productManager.createProduct(newProduct));
 });
 
 ProductRouter.put("/:id", async (req, res) => {

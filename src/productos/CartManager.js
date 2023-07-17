@@ -13,13 +13,7 @@ class CartManager {
       let respuesta = await fs.promises.readFile(this.path, "utf-8");    
       return JSON.parse(respuesta);
     }
-    /*writeCarts = async (carts) => {
-      let carts = await fs.promises.readFile(this.path, "utf-8");
-      let cartsParse = JSON.parse(carts);
-      let AllCarts = [...cartsParse, carts];
-      await fs.promises.writeFile(this.path, JSON.stringify(AllCarts));
-      return "Carrito Agregado";
-    }*/
+    
     exist = async (id) => {
         let carts = await this.readCart();
         return carts.find(cart => cart.id === id);
@@ -39,24 +33,23 @@ class CartManager {
         }
     }
     createCarts = async (cart) => {
-        try {
-            const carts = await this.getCarts();               
-
-            if (carts.length === 0) {                            
-                cart.id = 1;                                    
-            } else {
-                cart.id = carts[carts.length - 1].id + 1; 
-            }
-            console.log(cart);
-            carts.push(cart);
-
-            await fs.promises.writeFile(this.path, JSON.stringify(carts, null, '\t'));
-            return cart;
-
-        } catch (error) {
-            console.log(error);
-        }
-    }   
+      try {
+        let carts = await this.getCarts();   
+        if (carts.length === 0) {
+          cart.id = 1;
+          carts = [cart]; 
+        } else {
+          cart.id = carts[carts.length - 1].id + 1;
+          carts.push(cart); 
+        };
+        console.log(cart);
+    
+        await fs.promises.writeFile(this.path, JSON.stringify(carts, null, '\t'));
+        return cart;
+      } catch (error) {
+        console.log(error);
+      }
+    }
     getCartsById = async (id) => {
       const carts = await this.readCart();
       const filter = carts.find((cart) => cart.id === id);

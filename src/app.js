@@ -1,9 +1,9 @@
 // Imports
 import express from 'express';
+import { Server } from 'socket.io';
 import ProductRouter from "./router/product.router.js";
 import CartRouter from "./router/carts.router.js";
-import { engine } from "express-handlebars";
-import path from "path";
+import handlebars from 'express-handlebars';
 import __dirname from './utils.js';
 import ProductManager from './productos/ProductsManager.js';
 
@@ -16,31 +16,33 @@ app.use(express.json());
 app.use(express.urlencoded({extended : true}));
 
 //Static
-app.use( express.static((`${__dirname}/public`)));
+app.use(express.static((`${__dirname}/public`)));
 
 //Routers
 app.use("/api/products", ProductRouter);
 app.use("/api/carts", CartRouter);
 
-//Handlebars
-app.engine("handlebars", engine());
-app.set("view engine", "handlebars");
-app.set("views", path.join(__dirname + "/views"));
-
-app.get("/", async (req, res) => {
-    let allProducts = await productManager.getProduct
-    res.render("home",{
-        title:"Express avanzado | handlebars ",
-        products: allProducts
-    });
-});
+// Handlebars
+app.engine('handlebars', handlebars.engine());
+app.set('views', `${__dirname}/views`);
+app.set('view engine', 'handlebars');
 
 //Puerto de enlace
 const PORT = 8080;
 const server = app.listen(PORT, () =>{
     console.log(`Express por Local Host ${server.address().port}`)
 });
+const io = new Server (server);
+
+io.on('connection', socket => {
+    console.log('Nuevo cliente conectado');
+    socket.on('message', data => {
+        console.log(data)
+    })
+});
+
 server.on("error", (error) => console.log(`Error del servidor ${error}`));
+
 
 
 

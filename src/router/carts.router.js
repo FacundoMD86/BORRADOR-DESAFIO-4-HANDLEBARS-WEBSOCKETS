@@ -3,7 +3,6 @@ import CartManager from "../productos/CartManager.js";
 import uploader from "../services/uploader.js";
 
 const CartRouter = Router();
-//const carts = [];
 
 const cartManager = new CartManager('./src/files/carts.json');
 const readCarts = cartManager.readCart();
@@ -15,6 +14,10 @@ CartRouter.get("/", async (req, res) => {
     let allCarts = await readCarts;
     let cartLimit = allCarts.slice(limit);
     res.send(cartLimit);
+    res.render("home",{
+        title:"Express avanzado | handlebars ",
+        products: allCarts
+    });
 });
 
 CartRouter.get("/:id", async (req, res) => {

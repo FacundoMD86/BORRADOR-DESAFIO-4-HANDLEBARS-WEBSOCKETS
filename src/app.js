@@ -1,10 +1,13 @@
 // Imports
 import express from 'express';
+import __dirname from './utils.js';
+import handlebars from 'express-handlebars';
 import { Server } from 'socket.io';
+
+import viewRouter from './router/view.router.js';
 import ProductRouter from "./router/product.router.js";
 import CartRouter from "./router/carts.router.js";
-import handlebars from 'express-handlebars';
-import __dirname from './utils.js';
+
 import ProductManager from './productos/ProductsManager.js';
 
 const productManager = new ProductManager("./src/files/Productos.json");
@@ -14,38 +17,57 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({extended : true}));
 
+//Puerto de enlace
+const PORT = 8080;
+
 //Static
 app.use(express.static((`${__dirname}/public`)));
-
-//Routers
-app.use("/api/products", ProductRouter);
-app.use("/api/carts", CartRouter);
 
 // Handlebars
 app.engine('handlebars', handlebars.engine());
 app.set('views', `${__dirname}/views`);
 app.set('view engine', 'handlebars');
 
-//Puerto de enlace
-const PORT = 8080;
+app.get("/", (req, res)=>{
+    res.render("realtimeproducts");
+});
+
+//Routers
+app.use("/api/products", ProductRouter);
+app.use("/api/carts", CartRouter);
+app.use("/api/view", viewRouter);
+
 const server = app.listen(PORT, () =>{
     console.log(`Express por Local Host ${server.address().port}`)
 });
+server.on("error", (error) => console.log(`Error del servidor ${error}`));
 
 //Socket
-const io = new Server (server);
-io.on('connection', socket => {
-    console.log('Nuevo cliente conectado');
-    socket.on('message', data => {
-        console.log(data)
-    });
-    socket.on('message2', data=> {
-        logs.push({ socketId: socket.id, message:data});
-        io.emit('log', { logs })
-    });
-});
+const pmanager=new ProductManager(__dirname+"/files/productos.json")
+const socketServer = new Server(server)
 
-server.on("error", (error) => console.log(`Error del servidor ${error}`));
+socketServer.on("connection",async (socket)=>{
+    console.log("cliente conectado con id:" ,socket.id)
+    const products = await pmanager.getProducts({});
+    socket.emit('productos', products);
+
+    socket.on('addProduct', async data => {
+        await pmanager.addProduct(data);
+        const updatedProducts = await pmanager.getProducts({}); // Obtener la lista actualizada de productos
+    socket.emit('productosupdated', updatedProducts);
+      });
+
+      socket.on("deleteProduct", async (id) => {
+        console.log("ID del producto a eliminar:", id);
+        const deletedProduct = await pmanager.deleteProduct(id);
+        const updatedProducts = await pmanager.getProducts({});
+        socketServer.emit("productosupdated", updatedProducts);
+      });
+     
+
+     
+
+})
 
 
 

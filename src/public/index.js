@@ -4,9 +4,6 @@ import CartManager from '../productos/CartManager.js';
 const deposito = new ProductsManager('./files/Productos.json');
 const cartDepo = new CartManager('./files/carts.json');
 
-const socket = io();
-socket.emit('message', 'Hola, soy un mensaje del front')
-
 const env = async () => {
     try {
         const productos = await deposito.getProduct();
@@ -39,3 +36,9 @@ const env = async () => {
     }
 };
 env();
+
+const socket = io();
+//socket.emit('message', 'Hola, soy un mensaje del front');
+socket.on('actualizacion', data => {
+    console.log(data);
+});

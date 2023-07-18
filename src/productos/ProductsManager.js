@@ -20,7 +20,7 @@ class ProductManager {
         try {
             if (fs.existsSync(this.path)) {                                     
                 const data = await this.readProduct(); 
-                console.log(data);                            
+                //console.log(data);                            
                 return data;
             } else {
                 return [];

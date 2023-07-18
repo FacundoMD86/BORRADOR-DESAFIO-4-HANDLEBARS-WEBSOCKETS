@@ -7,20 +7,16 @@ const ProductRouter = Router();
 const productManager = new ProductManager("./src/files/Productos.json");
 const readProducts = await productManager.getProduct();
 
-
 ProductRouter.get("/", async (req, res) => {
     let limit = parseInt(req.query.limit);
-    if (!limit) {
-        let allProducts = await productManager.getProduct();
-        res.render("home", {
-            title: "Express avanzado | handlebars ",
-            products: allProducts
-        });
-    } else {
-        let allProducts = await productManager.getProduct();
-        let productLimit = allProducts.slice(limit);
-        res.send(productLimit);
-    }
+    if (!limit) return res.send(await readProducts);
+    let allProducts = await readProducts;
+    let productLimit = allProducts.slice(limit);
+    res.send(productLimit);
+    res.render("home",{
+        title:"Express avanzado | handlebars ",
+        products: allProducts
+    });
 });
 
 ProductRouter.get("/:id", async (req, res) => {

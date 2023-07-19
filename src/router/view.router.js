@@ -7,12 +7,13 @@ const pmanager=new ProductManager(__dirname+'/files/products.json')
 const router=Router()
 
 router.get("/",async(req,res)=>{
-  const listaproductos=await pmanager.getProducts({})
-  res.render("home",{allProducts})
+  const listaProductos = await pmanager.getProduct({})
+  console.log(listaProductos);
+  res.render("home",{listaProductos});
 })
 
 router.get("/realtimeproducts",async(req,res)=>{
-   res.render("realTimeProducts")
+   res.render("realtimeproducts")
 })
 
 export default router

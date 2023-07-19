@@ -10,7 +10,7 @@ import CartRouter from "./router/carts.router.js";
 
 import ProductManager from './productos/ProductsManager.js';
 
-const productManager = new ProductManager("./src/files/Productos.json");
+//const productManager = new ProductManager("./src/files/Productos.json");
 
 //Express
 const app = express();
@@ -43,30 +43,26 @@ const server = app.listen(PORT, () =>{
 server.on("error", (error) => console.log(`Error del servidor ${error}`));
 
 //Socket
-const pmanager=new ProductManager(__dirname+"/files/productos.json")
-const socketServer = new Server(server)
+const socketServer = new Server(server);
+const pmanager=new ProductManager( __dirname +"/files/productos.json")
 
 socketServer.on("connection",async (socket)=>{
     console.log("cliente conectado con id:" ,socket.id)
-    const products = await pmanager.getProducts({});
+    const products = await pmanager.getProduct({});
     socket.emit('productos', products);
 
     socket.on('addProduct', async data => {
         await pmanager.addProduct(data);
-        const updatedProducts = await pmanager.getProducts({}); // Obtener la lista actualizada de productos
-    socket.emit('productosupdated', updatedProducts);
+        const updatedProducts = await pmanager.getProduct({}); // Obtener la lista actualizada de productos
+        socket.emit('productosUpdated', updatedProducts);
       });
 
       socket.on("deleteProduct", async (id) => {
         console.log("ID del producto a eliminar:", id);
         const deletedProduct = await pmanager.deleteProduct(id);
-        const updatedProducts = await pmanager.getProducts({});
-        socketServer.emit("productosupdated", updatedProducts);
+        const updatedProducts = await pmanager.getProduct({});
+        socketServer.emit("productosUpdated", updatedProducts);
       });
-     
-
-     
-
 })
 
 

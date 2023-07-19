@@ -1,4 +1,5 @@
 const socketCliente = io();
+
 socketCliente.on("productos", (products) => {
   console.log(products);
   updateProductList(products);

@@ -7,18 +7,27 @@ import { Server } from 'socket.io';
 import viewRouter from './router/view.router.js';
 import ProductRouter from "./router/product.router.js";
 import CartRouter from "./router/carts.router.js";
+import { connect } from "mongoose";
 
 import ProductManager from './productos/ProductsManager.js';
 
 //const productManager = new ProductManager("./src/files/Productos.json");
 
-//Express
+//Midlewares
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({extended : true}));
 
 //Puerto de enlace
 const PORT = 8080;
+
+//Mongoose
+const ready = ()=> {
+  console.log('server ready on port' +PORT)
+  connect('mongodb+srv://<username>:11223344@fmd.cqejc72.mongodb.net/')
+    .then(()=>console.log('database connected'))
+    .catch(err=>console.log(err))
+} 
 
 //Static
 app.use(express.static((`${__dirname}/public`)));
@@ -48,19 +57,19 @@ const pmanager=new ProductManager( __dirname +"/files/productos.json")
 
 socketServer.on("connection",async (socket)=>{
     console.log("cliente conectado con id:" ,socket.id)
-    const products = await pmanager.getProduct({});
+    const products = await pmanager.readProduct();
     socket.emit('productos', products);
 
     socket.on('addProduct', async data => {
-        await pmanager.addProduct(data);
-        const updatedProducts = await pmanager.getProduct({}); // Obtener la lista actualizada de productos
+        await pmanager.createProduct(data);
+        const updatedProducts = await pmanager.getProduct(); 
         socket.emit('productosUpdated', updatedProducts);
       });
 
       socket.on("deleteProduct", async (id) => {
         console.log("ID del producto a eliminar:", id);
         const deletedProduct = await pmanager.deleteProduct(id);
-        const updatedProducts = await pmanager.getProduct({});
+        const updatedProducts = await pmanager.getProduct();
         socketServer.emit("productosUpdated", updatedProducts);
       });
 })

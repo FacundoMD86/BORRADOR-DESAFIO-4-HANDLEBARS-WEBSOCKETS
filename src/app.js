@@ -8,6 +8,9 @@ import viewRouter from './router/view.router.js';
 import ProductRouter from "./router/product.router.js";
 import CartRouter from "./router/carts.router.js";
 import { connect } from "mongoose";
+import errorHandler from './midlewares/errorHandler.js';
+import notFoundHandler from './midlewares/notFoundHandler.js';
+import indexRouter from './router/indexRouter.js';
 
 import ProductManager from './productos/ProductsManager.js';
 
@@ -23,11 +26,11 @@ const PORT = 8080;
 
 //Mongoose
 const ready = ()=> {
-  console.log('server ready on port' +PORT)
-  connect('mongodb+srv://<username>:11223344@fmd.cqejc72.mongodb.net/')
+  console.log('server ready on port' + PORT)
+  connect('mongodb+srv://facundomd:11223344@fmd.cqejc72.mongodb.net/e-commerce')
     .then(()=>console.log('database connected'))
     .catch(err=>console.log(err))
-} 
+};
 
 //Static
 app.use(express.static((`${__dirname}/public`)));
@@ -45,10 +48,14 @@ app.get("/", (req, res)=>{
 app.use("/api/products", ProductRouter);
 app.use("/api/carts", CartRouter);
 app.use("/api/view", viewRouter);
+app.use('/api', indexRouter)
+app.use(errorHandler);
+app.use(notFoundHandler);
 
 const server = app.listen(PORT, () =>{
     console.log(`Express por Local Host ${server.address().port}`)
-});
+        }, ready
+);
 server.on("error", (error) => console.log(`Error del servidor ${error}`));
 
 //Socket
